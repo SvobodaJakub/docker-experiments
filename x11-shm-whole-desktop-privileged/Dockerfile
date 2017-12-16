@@ -1,31 +1,47 @@
 FROM fedora:27
 
-# A dockerfile for running xfce desktop and X11 apps on host's X11 server with shared memory (fast graphics) insecurely (poor sandboxing).
-# Docker is misused to provide a semi-standardized non-VM environment. Its ephemeral container features and sandboxing features are not used.
+# A dockerfile for running xfce desktop and X11 apps on host's X11 server with shared memory (fast
+# graphics) insecurely (poor sandboxing).
+
+# Docker is misused to provide a semi-standardized non-VM environment. Its ephemeral container
+# features and sandboxing features are not used.
+
 # It is possible to
-# * run a desktop environment and apps from e.g. Fedora 27 on top of e.g. CentOS 7 using this dockerfile.
+# * run a desktop environment and apps from e.g. Fedora 27 on top of e.g. CentOS 7 using this
+#   dockerfile.
 # * run X11 apps that use shared memory (shm) for 2D acceleration
 # * play and record audio (PulseAudio server on host required)
 # * use webcam
 # * use non-LSM-based sandboxed solutions like firejail, chromium
 # * install and update packages like on a normal system
-# * format flash drives (be careful, though, mounting from inside the container is untested, and any LUKS/DM-crypt/LVM integration with the host is untested)
+# * format flash drives (be careful, though, mounting from inside the container is untested, and any
+#   LUKS/DM-crypt/LVM integration with the host is untested)
 # * run VirtualBox (prerequisite is to install VirtualBox both on the host and inside the container)
-# * run Docker (runs sibling containers, it is not docker-in-docker, see https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/ )
+# * run Docker (runs sibling containers, it is not docker-in-docker, see
+#   https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/ )
+
 
 # Security considerations:
-# * It is just as secure as running the desktop environment directly without docker and without SELinux/AppArmor.
+# * It is just as secure as running the desktop environment directly without docker and without
+#   SELinux/AppArmor.
 # * You can improve security by e.g. using firejail to sandbox individual applications.
-# * X11 is shared by all applications and therefore any app can attack X11 or sniff keystrokes from other apps. Use e.g. firejail --x11 to sandbox X11 for individual apps.
+# * X11 is shared by all applications and therefore any app can attack X11 or sniff keystrokes from
+#   other apps. Use e.g. firejail --x11 to sandbox X11 for individual apps.
 # * --privileged is necessary for chromium or firejail to work
 # * --security-opt label:disable is needed 
 #     * so that /host_bind_mnt_run/media/ is accessible
 #     * so that host's webcamera works inside the "container"
-# * -v /dev:/dev is needed so that newly connected media are visible inside the container, which is useful with
-#     * VirtualBox's driver is available immediately after installation in the host, not only after container restart
-#     * VirtualBox running from the container but needing physical devices can be used right after connecting the devices without restarting the container
-#     * otherwise `--privileged` without `-v /dev:/dev` allows these actions, but the container has to be restarted after each change in /dev for the change to be visible inside the container
-# * -v /var/run/docker.sock:/var/run/docker.sock is needed so that docker is usable from within the container, but it allows access to everything about docker on the host - see https://stackoverflow.com/questions/40844197/what-is-the-docker-security-risk-of-var-run-docker-sock#41822163
+# * -v /dev:/dev is needed so that newly connected media are visible inside the container, which is
+#   useful with
+#     * VirtualBox's driver is available immediately after installation in the host, not only after
+#       container restart
+#     * VirtualBox running from the container but needing physical devices can be used right after
+#       connecting the devices without restarting the container
+#     * otherwise `--privileged` without `-v /dev:/dev` allows these actions, but the container has
+#       to be restarted after each change in /dev for the change to be visible inside the container
+# * -v /var/run/docker.sock:/var/run/docker.sock is needed so that docker is usable from within the
+#   container, but it allows access to everything about docker on the host - see
+#   https://stackoverflow.com/questions/40844197/what-is-the-docker-security-risk-of-var-run-docker-sock#41822163
 
 # pulseaudio integration inspired by
 # * https://github.com/TheBiggerGuy/docker-pulseaudio-example/blob/master/pulse-client.conf
@@ -36,21 +52,31 @@ FROM fedora:27
 # * don't expect 3D games or dual-gpu configurations to work; I have no plan to support this
 # * no SELinux inside the container
 # * no SELinux isolation between the host and the container
-# * not tested on debian/ubuntu (not tested with AppArmor) - probably no isolation and no availability of that as well
-# * when routing on the host changes, these changes are not propagated into the container - e.g. when the host connects to a VPN (no idea what's going on or how to fix it, but --net=host doesn't help); a slight workaround is to connect to the VPN in question before starting the container and then the VPN connection can be restarted and still accessible from inside the container as long as the routes remain the same
+# * not tested on debian/ubuntu (not tested with AppArmor) - probably no isolation and no
+#   availability of that as well
+# * when routing on the host changes, these changes are not propagated into the container - e.g.
+#   when the host connects to a VPN (no idea what's going on or how to fix it, but --net=host doesn't
+#   help); a slight workaround is to connect to the VPN in question before starting the container and
+#   then the VPN connection can be restarted and still accessible from inside the container as long as
+#   the routes remain the same
 
 # TODO/setup:
 # * search for all TODO strings and edit them - username, paths
 # * check that UID and GID match your host user and change the dockerfile accordingly if they don't
 # * read everything
-# * do all your setup (dnf install, etc.) inside the container, so that dnf distro-sync doesn't result in multiple copies of the same files and so that the container is sensibly updatable without redownloading everything everytime (the idea is to run a whole graphical system inside a single container)
-# * HISTSIZE configures the length of bash history; remove it if you are not interested in keeping long bash history
+# * do all your setup (dnf install, etc.) inside the container, so that dnf distro-sync doesn't
+#   result in multiple copies of the same files and so that the container is sensibly updatable
+#   without redownloading everything everytime (the idea is to run a whole graphical system inside a
+#   single container)
+# * HISTSIZE configures the length of bash history; remove it if you are not interested in keeping
+#   long bash history
 
 RUN dnf install procps-ng xeyes lxterminal mc bash-completion setup passwd -y
 RUN dnf install pulseaudio-utils -y 
 COPY pulse-client.conf /etc/pulse/client.conf
 
-# just assuming the uid and gid will be 1000 and assuming the username on the host also has uid and gid 1000
+# just assuming the uid and gid will be 1000 and assuming the username on the host also has uid and
+# gid 1000
 RUN useradd -m TODOUSERNAME
 RUN usermod -a TODOUSERNAME -G wheel
 RUN usermod -a TODOUSERNAME -G audio
