@@ -29,7 +29,7 @@ FROM fedora:27
 #   other apps. Use e.g. firejail --x11 to sandbox X11 for individual apps.
 # * --privileged is necessary for chromium or firejail to work
 # * --security-opt label:disable is needed 
-#     * so that /host_bind_mnt_run/media/ is accessible
+#     * so that /run_host_bind_mnt/media/ is accessible
 #     * so that host's webcamera works inside the "container"
 # * -v /dev:/dev is needed so that newly connected media are visible inside the container, which is
 #   useful with
@@ -101,7 +101,7 @@ ENV HOME /home/TODOUSERNAME
 
 
 # create and run a new container
-# docker run -it --name x11shmworkmainfc27c1 -h x11shmworkmainfc27c1 -v /tmp:/tmp -v /home/TODOUSERNAME/dockerfiles/x11-shm-work-main-home:/home/TODOUSERNAME -v /run/user/1000/pulse:/run/user/1000/pulse -v /var/run/docker.sock:/var/run/docker.sock --ipc=host -v /run:/host_bind_mnt_run --pid=host --env HISTSIZE=100000 --env DISPLAY="$DISPLAY" --env PULSE_SERVER=unix:/run/user/1000/pulse/native -v /dev:/dev --user 1000:1000 --privileged=true --security-opt label:disable x11shmworkmainf27 bash -c 'cd ~ ; source ~/.bash_profile ; bash'
+# docker run -it --name x11shmworkmainfc27c1 -h x11shmworkmainfc27c1 -v /tmp:/tmp -v /home/TODOUSERNAME/dockerfiles/x11-shm-work-main-home:/home/TODOUSERNAME -v /run/user/1000/pulse:/run/user/1000/pulse -v /var/run/docker.sock:/var/run/docker.sock --ipc=host -v /run:/run_host_bind_mnt --pid=host --env HISTSIZE=100000 --env DISPLAY="$DISPLAY" --env PULSE_SERVER=unix:/run/user/1000/pulse/native -v /dev:/dev --user 1000:1000 --privileged=true --security-opt label:disable x11shmworkmainf27 bash -c 'cd ~ ; source ~/.bash_profile ; bash'
 
 # now is the time to install xfce and everything in the _container_ (not into the image)
 
@@ -134,6 +134,10 @@ ENV HOME /home/TODOUSERNAME
 # ( killall xfwm4 ; sleep 1 ; xfwm4 --replace ; sleep 6 ; xfwm4 --replace ; sleep 6 ; xfwm4 --replace ; sleep 6 ; xfwm4 --replace ; sleep 6 ; xfwm4 --replace ; ) & sleep 10 ; xfce4-panel --quit ; sleep 4 ; xfce4-panel & 
 # (don't forget to have a button / script in host ready to start the window manager in case the docker container exits)
 
+
+# if it is run in a clean X11 "session" without any additional processes and without any session, then execute like this:
+# killall xfce4-power-manager nm-applet ; ( cd /home/jsvoboda/Files/dockerfiles/x11-shm-work-main-home/ ; systemctl start docker ; docker restart x11shmworkmainfc27c1 ; docker exec -it --user 1000:1000 x11shmworkmainfc27c1 bash -c 'cd ~ ; source ~/.bash_profile ; xfce4-session ' ; ) & sleep 10 ; sudo -u jsvoboda xfce4-power-manager ; sudo -u jsvoboda nm-applet &
+# (this runs xfce4-power-manager and nm-applet on the host and the session in the container)
 
 
 
