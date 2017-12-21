@@ -136,7 +136,7 @@ ENV HOME /home/TODOUSERNAME
 
 
 # if it is run in a clean X11 "session" without any additional processes and without any session, then execute like this:
-# killall xfce4-power-manager nm-applet ; ( cd /home/jsvoboda/Files/dockerfiles/x11-shm-work-main-home/ ; systemctl start docker ; docker restart x11shmworkmainfc27c1 ; docker exec -it --user 1000:1000 x11shmworkmainfc27c1 bash -c 'cd ~ ; source ~/.bash_profile ; xfce4-session ' ; ) & sleep 10 ; sudo -u jsvoboda xfce4-power-manager ; sudo -u jsvoboda nm-applet &
+# start-pulseaudio-x11; killall xfce4-power-manager nm-applet ; ( cd /home/jsvoboda/Files/dockerfiles/x11-shm-work-main-home/ ; systemctl start docker ; docker restart x11shmworkmainfc27c1 ; docker exec -it --user 1000:1000 x11shmworkmainfc27c1 bash -c 'cd ~ ; source ~/.bash_profile ; xfce4-session ' ; ) & sleep 10 ; sudo -u jsvoboda xfce4-power-manager ; sudo -u jsvoboda nm-applet &
 # (this runs xfce4-power-manager and nm-applet on the host and the session in the container)
 
 
