@@ -75,8 +75,7 @@ RUN dnf install procps-ng xeyes lxterminal mc bash-completion setup passwd -y
 RUN dnf install pulseaudio-utils -y 
 COPY pulse-client.conf /etc/pulse/client.conf
 
-# just assuming the uid and gid will be 1000 and assuming the username on the host also has uid and
-# gid 1000
+# just assuming the uid and gid will be 1000 and assuming the username on the host also has uid and gid 1000
 RUN useradd -m TODOUSERNAME
 RUN usermod -a TODOUSERNAME -G wheel
 RUN usermod -a TODOUSERNAME -G audio
@@ -101,12 +100,12 @@ ENV HOME /home/TODOUSERNAME
 
 
 # create and run a new container
-# docker run -it --name x11shmworkmainfc27c1 -h x11shmworkmainfc27c1 -v /tmp:/tmp -v /home/TODOUSERNAME/dockerfiles/x11-shm-work-main-home:/home/TODOUSERNAME -v /run/user/1000/pulse:/run/user/1000/pulse -v /var/run/docker.sock:/var/run/docker.sock --ipc=host -v /run:/run_host_bind_mnt --pid=host --env HISTSIZE=100000 --env DISPLAY="$DISPLAY" --env PULSE_SERVER=unix:/run/user/1000/pulse/native -v /dev:/dev --user 1000:1000 --privileged=true --security-opt label:disable x11shmworkmainf27 bash -c 'cd ~ ; source ~/.bash_profile ; bash'
+# docker run -it --name x11shmworkmainfc27c1 -h x11shmworkmainfc27c1 -v /tmp:/tmp:rslave -v /home/TODOUSERNAME/Files/dockerfiles/x11-shm-work-main-home:/home/TODOUSERNAME:rslave -v /run/user/1000/pulse:/run/user/1000/pulse:rslave -v /var/run/docker.sock:/var/run/docker.sock:rslave --ipc=host -v /run:/run_host_bind_mnt:rslave --pid=host --env HISTSIZE=100000 --env DISPLAY="$DISPLAY" --env PULSE_SERVER=unix:/run/user/1000/pulse/native -v /dev:/dev:rslave --user 1000:1000 --privileged=true --security-opt label:disable x11shmworkmainf27 bash -c 'cd ~ ; source ~/.bash_profile ; bash'
 
 # now is the time to install xfce and everything in the _container_ (not into the image)
 
 # run for a second, third, etc. time together with session startup
-# ( cd /home/TODOUSERNAME/dockerfiles/x11-shm-work-main-home/ ; systemctl start docker ; docker restart x11shmworkmainfc27c1 ; docker exec -it --user 1000:1000 x11shmworkmainfc27c1 bash -c 'cd ~ ; source ~/.bash_profile ; xfce4-session ' ; )
+# ( cd /home/TODOUSERNAME/Files/dockerfiles/x11-shm-work-main-home/ ; systemctl start docker ; docker restart x11shmworkmainfc27c1 ; docker exec -it --user 1000:1000 x11shmworkmainfc27c1 bash -c 'cd ~ ; source ~/.bash_profile ; xfce4-session ' ; )
 
 
 # if the container is already running, start another user shell with:
@@ -136,7 +135,7 @@ ENV HOME /home/TODOUSERNAME
 
 
 # if it is run in a clean X11 "session" without any additional processes and without any session, then execute like this:
-# start-pulseaudio-x11; killall xfce4-power-manager nm-applet ; ( cd /home/jsvoboda/Files/dockerfiles/x11-shm-work-main-home/ ; systemctl start docker ; docker restart x11shmworkmainfc27c1 ; docker exec -it --user 1000:1000 x11shmworkmainfc27c1 bash -c 'cd ~ ; source ~/.bash_profile ; xfce4-session ' ; ) & sleep 10 ; sudo -u jsvoboda xfce4-power-manager ; sudo -u jsvoboda nm-applet &
+# start-pulseaudio-x11 ; ( sleep 40 ; xfce4-power-manager ;  nm-applet ; ) & sudo bash -c "killall xfce4-power-manager nm-applet ; ( cd /home/TODOUSERNAME/Files/dockerfiles/x11-shm-work-main-home/ ; systemctl start docker ; docker restart x11shmworkmainfc27c1 ; docker exec -it --user 1000:1000 x11shmworkmainfc27c1 bash -c 'export USER=$(whoami); cd ~ ; source ~/.bash_profile ; xfce4-session ' ; ) " ;
 # (this runs xfce4-power-manager and nm-applet on the host and the session in the container)
 
 
